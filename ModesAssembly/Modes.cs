@@ -10,7 +10,7 @@ public enum BombMode
     Zen
 }
 
-class TwitchPlaysActive
+/*class TwitchPlaysActive
 {
     public static GameObject _gameObject;
 
@@ -37,7 +37,7 @@ class TwitchPlaysActive
     {
         return _gameObject != null;
     }
-}
+}*/
 
 [RequireComponent(typeof(KMService))]
 [RequireComponent(typeof(KMGameInfo))]
@@ -46,24 +46,38 @@ class Modes : MonoBehaviour
     private List<Bomb> Bombs = null;
     private List<TimerComponent> Timers = new List<TimerComponent>();
     private float normalRate = 0;
+    private bool TwitchPlaysActive = false;
     private void Awake()
     {
-        StartCoroutine(TwitchPlaysActive.Refresh());
         GetComponent<KMGameInfo>().OnStateChange += delegate (KMGameInfo.State state)
+        {
+            Debug.LogFormat("[Modes] Updating services...");
+            StartCoroutine(UpdateServices());
+            if (state == KMGameInfo.State.Gameplay && !TwitchPlaysActive)
             {
-                if (state == KMGameInfo.State.Gameplay && !TwitchPlaysActive.Installed())
-                {
-                    StartCoroutine(CheckForBomb());
-                }
-                else
-                {
-                    StopCoroutine(CheckForBomb());
-                }
-                if (TwitchPlaysActive.Installed())
-                {
-                    Debug.LogFormat("[Modes] Conflict detected, disabling Modes {0}", TwitchPlaysActive._gameObject.name);
-                }
-            };
+                StartCoroutine(CheckForBomb());
+            }
+            else if (TwitchPlaysActive)
+            {
+                StopCoroutine(CheckForBomb());
+            }
+        };
+    }
+
+    private void GetModServices()
+    {
+        KMService[] modServices = FindObjectsOfType<KMService>();
+        List<string> temp = new List<string>();
+        foreach (KMService modService in modServices)
+        {
+            if (modService.name.StartsWith("TwitchPlaysService")) temp.Add("TwitchPlaysService");
+        }
+        if (temp.Contains("TwitchPlaysService"))
+        {
+            TwitchPlaysActive = true;
+            Debug.LogFormat("[Modes] Conflict Detected");
+        }
+        else TwitchPlaysActive = false;
     }
 
     private IEnumerator CheckForBomb()
@@ -78,6 +92,7 @@ class Modes : MonoBehaviour
             bomb.GetTimer().text.color = Color.blue;
             bomb.GetTimer().SetRateModifier(normalRate);
             bomb.GetTimer().SetTimeRemaing(1);
+            bomb.NumStrikesToLose += 1;
             foreach (BombComponent bombComponent in bomb.BombComponents)
             {
                 bombComponent.OnStrike += delegate{ CheckForStrikes(bomb); return false; };
@@ -90,6 +105,12 @@ class Modes : MonoBehaviour
     {
         bomb.GetTimer().SetRateModifier(normalRate);
         bomb.NumStrikesToLose += 1;
+    }
+
+    private IEnumerator UpdateServices()
+    {
+        GetModServices();
+        yield return null;
     }
 }
 
