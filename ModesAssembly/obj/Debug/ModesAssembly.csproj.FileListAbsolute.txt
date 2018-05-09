@@ -22,8 +22,8 @@ D:\ktane\Bomb Modes\ModesAssembly\bin\Debug\KMFramework.xml
 D:\ktane\Bomb Modes\ModesAssembly\bin\Debug\UnityEditor.xml
 D:\ktane\Bomb Modes\ModesAssembly\bin\Debug\UnityEngine.xml
 D:\ktane\Bomb Modes\ModesAssembly\bin\Debug\UnityEngine.UI.xml
-D:\ktane\Bomb Modes\ModesAssembly\obj\Debug\ModesAssembly.csprojResolveAssemblyReference.cache
 D:\ktane\Bomb Modes\ModesAssembly\obj\Debug\ModesAssembly.csproj.CoreCompileInputs.cache
 D:\ktane\Bomb Modes\ModesAssembly\obj\Debug\ModesAssembly.csproj.CopyComplete
 D:\ktane\Bomb Modes\ModesAssembly\obj\Debug\Modes.dll
 D:\ktane\Bomb Modes\ModesAssembly\obj\Debug\Modes.pdb
+D:\ktane\Bomb Modes\ModesAssembly\obj\Debug\ModesAssembly.csprojAssemblyReference.cache
