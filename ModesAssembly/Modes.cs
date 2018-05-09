@@ -83,7 +83,6 @@ class Modes : MonoBehaviour
             bomb.NumStrikesToLose += 1;
             foreach (BombComponent bombComponent in bomb.BombComponents)
             {
-                Debug.LogFormat("[Modes] {0}", bombComponent.GetModuleDisplayName());
                 while (CheckModules(bombComponent, bomb).MoveNext()) yield return CheckModules(bombComponent, bomb).Current;
                 bombComponent.OnStrike += delegate{ CheckForStrikes(bomb); return false; };
             }
@@ -106,18 +105,23 @@ class Modes : MonoBehaviour
 
     private IEnumerator CheckModules(BombComponent module, Bomb bomb)
     {
-        switch (module.GetModuleDisplayName())
+        switch (module.ComponentType)
         {
-            case "Turn The Key":
-                yield return new CaseTTK(module, bomb);
+            case Assets.Scripts.Missions.ComponentTypeEnum.Mod:
+                switch (module.GetComponent<KMBombModule>().ModuleType)
+                {
+                    case "TurnTheKey":
+                        yield return new CaseTTK(module, bomb);
+                        break;
+                    case "ButtonV2":
+                        yield return new CaseSquare(module, bomb);
+                        break;
+                    case "theSwan":
+                        yield return new CaseSwan(module, bomb);
+                        break;
+                }
                 break;
-            case "Square Button":
-                yield return new CaseSquare(module, bomb);
-                break;
-            case "The Swan":
-                yield return new CaseSwan(module, bomb);
-                break;
-            case "The Button":
+            case Assets.Scripts.Missions.ComponentTypeEnum.BigButton:
                 yield return new CaseButton(module, bomb);
                 break;
         }
