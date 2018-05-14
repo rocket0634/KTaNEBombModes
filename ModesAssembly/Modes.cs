@@ -21,7 +21,7 @@ class Modes : MonoBehaviour
 {
     private List<Bomb> Bombs = null;
     public static BombMode mode = BombMode.Normal;
-    private List<TimerComponent> Timers = new List<TimerComponent>();
+    private readonly List<TimerComponent> Timers = new List<TimerComponent>();
     private ModesSettings Settings = new ModesSettings();
     private float normalRate = 0;
     private float startTime;
@@ -81,11 +81,7 @@ class Modes : MonoBehaviour
             bomb.GetTimer().SetRateModifier(normalRate);
             bomb.GetTimer().SetTimeRemaing(1);
             bomb.NumStrikesToLose += 1;
-            foreach (BombComponent bombComponent in bomb.BombComponents)
-            {
-                while (CheckModules(bombComponent, bomb).MoveNext()) yield return CheckModules(bombComponent, bomb).Current;
-                bombComponent.OnStrike += delegate{ CheckForStrikes(bomb); return false; };
-            }
+            StartCoroutine(CheckModules(bomb));
         }
         
     }
@@ -103,29 +99,31 @@ class Modes : MonoBehaviour
         yield return null;
     }
 
-    private IEnumerator CheckModules(BombComponent module, Bomb bomb)
+    private IEnumerator CheckModules(Bomb bomb)
     {
-        switch (module.ComponentType)
-        {
-            case Assets.Scripts.Missions.ComponentTypeEnum.Mod:
-                switch (module.GetComponent<KMBombModule>().ModuleType)
-                {
-                    case "TurnTheKey":
-                        yield return new CaseTTK(module, bomb);
-                        break;
-                    case "ButtonV2":
-                        yield return new CaseSquare(module, bomb);
-                        break;
-                    case "theSwan":
-                        yield return new CaseSwan(module, bomb);
-                        break;
-                }
-                break;
-            case Assets.Scripts.Missions.ComponentTypeEnum.BigButton:
-                yield return new CaseButton(module, bomb);
-                break;
+        foreach (BombComponent module in bomb.BombComponents) {
+            switch (module.ComponentType)
+            {
+                case Assets.Scripts.Missions.ComponentTypeEnum.Mod:
+                    switch (module.GetComponent<KMBombModule>().ModuleType)
+                    {
+                        case "TurnTheKey":
+                            yield return new CaseTTK(module, bomb, startTime);
+                            break;
+                        case "ButtonV2":
+                            yield return new CaseSquare(module, bomb);
+                            break;
+                        case "theSwan":
+                            yield return new CaseSwan(module, bomb);
+                            break;
+                    }
+                    break;
+                case Assets.Scripts.Missions.ComponentTypeEnum.BigButton:
+                    yield return new CaseButton(module, bomb);
+                    break;
+            }
+            module.OnStrike += delegate { CheckForStrikes(bomb); return false; };
         }
-        
     }
 
     private void GetSettings()
@@ -175,8 +173,8 @@ class ModConfig
         _settingsType = settingsType;
     }
 
-    string _filename = null;
-    Type _settingsType = null;
+    readonly string _filename = null;
+    readonly Type _settingsType = null;
 
     string SettingsPath
     {
@@ -220,14 +218,15 @@ class ModConfig
     }
 }
 
-public class CaseTTK : MonoBehaviour
+public class CaseTTK
 {
-    public CaseTTK(BombComponent bombComponent, Bomb bomb)
+    public CaseTTK(BombComponent bombComponent, Bomb bomb, float startTime)
     {
         module = bombComponent;
         currentBomb = bomb;
+        initialTime = startTime;
         _lock = (MonoBehaviour)_lockField.GetValue(module.GetComponent(_componentType));
-        StartCoroutine(ReWriteTTK());
+        if (SceneManager.Instance.GameplayState.Bombs != null) _lock?.StartCoroutine(ReWriteTTK());
         module.GetComponent<KMBombModule>().OnActivate = OnActivate;
     }
 
@@ -249,7 +248,7 @@ public class CaseTTK : MonoBehaviour
     private bool OnKeyTurn(int turnTime = -1)
     {
         bool result = CanTurnEarlyWithoutStrike(turnTime);
-        StartCoroutine(DelayKeyTurn(!result));
+        _lock.StartCoroutine(DelayKeyTurn(!result));
         return false;
     }
 
@@ -309,9 +308,8 @@ public class CaseTTK : MonoBehaviour
                 textMesh.text = "88:88";
                 return;
             }
-
             _keyTurnTimes.Clear();
-            for (int i = (Modes.mode.Equals(BombMode.Zen) ? 45 : 3); i < (Modes.mode.Equals(BombMode.Zen) ? 3600 : (currentBomb.GetTimer().TimeRemaining - 45)); i += 3)
+            for (int i = (Modes.mode.Equals(BombMode.Zen) ? 45 : 3); i < (Modes.mode.Equals(BombMode.Zen) ? initialTime : (currentBomb.GetTimer().TimeRemaining - 45)); i += 3)
             {
                 _keyTurnTimes.Add(i);
             }
@@ -320,7 +318,7 @@ public class CaseTTK : MonoBehaviour
             _keyTurnTimes = _keyTurnTimes.Shuffle().ToList();
             _previousSerialNumber = serial;
         }
-        _targetTimeField.SetValue(currentBomb.GetComponent(_componentType), _keyTurnTimes[0]);
+        _targetTimeField.SetValue(module.GetComponent(_componentType), _keyTurnTimes[0]);
 
         string display = $"{_keyTurnTimes[0] / 60:00}:{_keyTurnTimes[0] % 60:00}";
         _keyTurnTimes.RemoveAt(0);
@@ -387,6 +385,7 @@ public class CaseTTK : MonoBehaviour
     private MonoBehaviour _lock = null;
     private BombComponent module;
     private Bomb currentBomb;
+    private readonly float initialTime;
 }
 
 public class CaseSquare
