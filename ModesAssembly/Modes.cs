@@ -77,11 +77,11 @@ class Modes : MonoBehaviour
         {
             if (bomb.GetTimer() == null || bomb.GetTimer().GetRate() < 0) continue;
             normalRate = -bomb.GetTimer().GetRate();
+            StartCoroutine(CheckModules(bomb));
             bomb.GetTimer().text.color = Color.blue;
             bomb.GetTimer().SetRateModifier(normalRate);
             bomb.GetTimer().SetTimeRemaing(1);
             bomb.NumStrikesToLose += 1;
-            StartCoroutine(CheckModules(bomb));
         }
         
     }
