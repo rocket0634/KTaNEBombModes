@@ -7,12 +7,12 @@ public class ModManualManager
     private MethodInfo TransitionToScreen = typeof(MenuManager).GetMethod("TransitionToScreen", BindingFlags.Instance | BindingFlags.NonPublic);
     public void Start()
     {
-        var obj = ManualCheckerLoader.Instance.testObject.AddComponent<ManualScreen>();
-        ManualScreen ManualScreenPrefab = obj;
-        MenuScreen screen = Object.Instantiate(ManualScreenPrefab);
-        screen.Load();
-        screen.gameObject.SetActive(false);
-        ManualCheckerLoader.Instance.StartCoroutine(Transit(screen));
+        //var obj = ManualCheckerLoader.Instance.prefab.AddComponent<ManualScreen>();
+        //ManualScreen ManualScreenPrefab = obj;
+        //MenuScreen screen = Object.Instantiate(ManualScreenPrefab);
+        //screen.Load();
+        //screen.gameObject.SetActive(false);
+        //ManualCheckerLoader.Instance.StartCoroutine(Transit(screen));
     }
 
     private IEnumerator Transit(MenuScreen screen)

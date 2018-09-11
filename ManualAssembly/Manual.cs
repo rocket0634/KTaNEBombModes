@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Reflection;
 using System.Linq;
 using TMPro;
+using SceneManagement = UnityEngine.SceneManagement.SceneManager;
 
 public class Manual
 {
@@ -16,7 +17,7 @@ public class Manual
     internal static bool button;
     internal static SceneManager SM { get { return SceneManager.Instance; } }
     private ManualCheckerLoader Instance = ManualCheckerLoader.Instance;
-    //Due to button placement, I've made a new texture to fit the buttons in
+    private static ManualManager Manager { get { return ManualCheckerLoader.Manager; } }
 
     internal void OnStateChange(KMGameInfo.State state)
     {
@@ -55,7 +56,9 @@ public class Manual
         font = ManualButton.GetComponentInChildren<TextMeshPro>().font;
         /*Getting ready to call EnterModManagerStateFromSetup, however, I will be replacing modManagerScene with my own scene
         As such, I'll basically be copying this method here, and replacing the last line.*/
-        ManualButton.OnInteract += delegate () { button = true; Debug.LogFormat("[Manual] " + button.ToString()); SceneManager.Instance.EnterModManagerStateFromSetup(); return false; };
+        //ManualButton.OnInteract += delegate () { button = true; Debug.LogFormat("[Manual] " + button.ToString()); SceneManager.Instance.EnterModManagerStateFromSetup(); return false; };
+        //ManualButton.OnInteract += delegate () { button = true; SceneManager.Instance.EnterModManagerStateFromSetup(); return false; };
+        ManualButton.OnInteract += delegate () { OnInteract(); return false; };
     }
 
     private void OnInteract()
@@ -68,8 +71,11 @@ public class Manual
         {
             SM.SaveData();
             SM.SetupState.ExitState();
-            ManualManager ManualManager = new ManualManager();
-            ManualManager.Start();
+            _state.SetValue(SceneManager.Instance, SceneManager.State.ModManager);
+            LoadingOverlay.Instance.Disable();
+            UnityEngine.SceneManagement.Scene ManualManager = SceneManagement.CreateScene("ManualManagerScene");
+            SceneManagement.SetActiveScene(ManualManager);
+            button = true;
         });
     }
 }
