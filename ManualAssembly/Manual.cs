@@ -14,7 +14,7 @@ public class Manual
     public static MethodInfo _GetAllAppendixManuals = typeof(ModManager).GetMethod("GetAllAppendixManuals", BindingFlags.NonPublic | BindingFlags.Instance);
     public static Material fontmaterial;
     public static TMP_FontAsset font;
-    internal static bool button;
+    internal static bool button, done;
     internal static SceneManager SM { get { return SceneManager.Instance; } }
     private ManualCheckerLoader Instance = ManualCheckerLoader.Instance;
     private static ManualManager Manager { get { return ManualCheckerLoader.Manager; } }
@@ -31,7 +31,8 @@ public class Manual
     private IEnumerator CheckForBrochure()
     {
         yield return null;
-        
+
+        if (done) yield break;
         //Get the SetupRoom to call the ModManagerHoldable
         SetupRoom setupRoom = (SetupRoom)SceneManager.Instance.CurrentRoom;
         ModManagerHoldable _brochure = setupRoom.ModManagerHoldable;
@@ -59,6 +60,7 @@ public class Manual
         //ManualButton.OnInteract += delegate () { button = true; Debug.LogFormat("[Manual] " + button.ToString()); SceneManager.Instance.EnterModManagerStateFromSetup(); return false; };
         //ManualButton.OnInteract += delegate () { button = true; SceneManager.Instance.EnterModManagerStateFromSetup(); return false; };
         ManualButton.OnInteract += delegate () { OnInteract(); return false; };
+        done = true;
     }
 
     private void OnInteract()
@@ -73,8 +75,8 @@ public class Manual
             SM.SetupState.ExitState();
             _state.SetValue(SceneManager.Instance, SceneManager.State.ModManager);
             LoadingOverlay.Instance.Disable();
-            UnityEngine.SceneManagement.Scene ManualManager = SceneManagement.CreateScene("ManualManagerScene");
-            SceneManagement.SetActiveScene(ManualManager);
+            //UnityEngine.SceneManagement.Scene ManualManager = SceneManagement.CreateScene("ManualManagerScene");
+            //SceneManagement.SetActiveScene(ManualManager);
             button = true;
         });
     }

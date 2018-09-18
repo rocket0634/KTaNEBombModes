@@ -237,6 +237,10 @@ public class AssetBundler
             .Where(path => path.EndsWith(".dll") && path.StartsWith("Assets/Plugins/Managed"))
             .Select(path => "Assets/Plugins/Managed/" + Path.GetFileNameWithoutExtension(path))
             .ToList();
+        managedReferences.AddRange(AssetDatabase.GetAllAssetPaths()
+            .Where(path => path.EndsWith(".dll") && path.StartsWith("Assets/AdditionalAssemblies") && !path.Contains("de"))
+            .Select(path => "Assets/AdditionalAssemblies/" + Path.GetFileNameWithoutExtension(path))
+            .ToList());
 
         string unityAssembliesLocation;
         switch (System.Environment.OSVersion.Platform)
@@ -381,7 +385,8 @@ public class AssetBundler
     /// </summary>
     protected void CopyManagedAssemblies()
     {
-        IEnumerable<string> assetPaths = AssetDatabase.GetAllAssetPaths().Where(path => path.EndsWith(".dll") && path.StartsWith("Assets/Plugins"));
+        IEnumerable<string> assetPaths = AssetDatabase.GetAllAssetPaths().Where(path => path.EndsWith(".dll") && (path.StartsWith("Assets/Plugins") 
+            || path.StartsWith("Assets/AdditionalAssemblies")) && !path.Contains("/de/"));
 
         //Now find any other managed plugins that should be included, other than the EXCLUDED_ASSEMBLIES list
         foreach (string assetPath in assetPaths)

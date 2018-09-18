@@ -5,9 +5,11 @@ public class ManualManager : MonoBehaviour
     static GUIStyle boxStyle;
     const int margin = 20;
     readonly Rect titleBarRect = new Rect(0, 0, 10000, 20);
+    static readonly GUIContent backButton = new GUIContent("back");
     Rect windowRect = new Rect(margin, margin, Screen.width - (margin * 2), Screen.height - (margin * 2));
-    const string windowTitle = "Manual manager";
+    const string windowTitle = "Manual Manager";
     public bool isActive = false;
+    private bool first = true, back = false;
     void OnGUI()
     {
         if (boxStyle == null)
@@ -19,9 +21,16 @@ public class ManualManager : MonoBehaviour
                 alignment = TextAnchor.MiddleLeft
             };
         }
+        if (back)
+        {
+            isActive = false;
+            back = false;
+            SceneManager.Instance.EnterSetupState();
+        }
 
         if (!isActive) return;
         GUILayout.Window(654321, windowRect, DrawWindow, windowTitle);
+        first = false;
     }
 
     void DrawWindow(int windowID)
@@ -32,6 +41,7 @@ public class ManualManager : MonoBehaviour
     void DrawToolbar()
     {
         GUILayout.BeginHorizontal();
+        back = GUILayout.Button(backButton);
         GUILayout.EndHorizontal();
     }
 }

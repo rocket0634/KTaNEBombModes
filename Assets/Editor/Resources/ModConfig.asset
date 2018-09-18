@@ -15,5 +15,6 @@ MonoBehaviour:
   title: Manual Manager
   description: 
   version: 
-  outputFolder: build
+  outputFolder: C:\Program Files (x86)\Steam\steamapps\common\Keep Talking and Nobody
+    Explodes\mods
   previewImage: {fileID: 0}
